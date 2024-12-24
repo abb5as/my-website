@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة تجنب الكرات</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f8ff;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+        }
+        .button {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background-color: #45a049;
+            box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.3);
+        }
+        canvas {
+            background-color: #87CEEB;
+            border: 3px solid #2f4f4f;
+            border-radius: 15px;
+            touch-action: none;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            margin-top: -30px; /* رفع شاشة اللعبة قليلاً */
+        }
+        .control-button {
+            position: absolute;
+            bottom: 20px; /* وضع الأزرار في الأسفل */
+            padding: 20px 40px;
+            font-size: 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .control-button:hover {
+            background-color: #45a049;
+            box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.3);
+            transform: scale(1.1);
+        }
+        .control-button:active {
+            background-color: #388E3C;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+        }
+        .left-button { 
+            left: 20px; /* زر اليسار في الجهة اليسرى */
+        }
+        .right-button { 
+            right: 20px; /* زر اليمين في الجهة اليمنى */
+        }
+        .menu-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #FFB6C1, #FFD700, #8A2BE2);
+            opacity: 0.5;
+            z-index: -1;
+            border-radius: 15px;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #2f4f4f;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        .stars {
+            font-size: 30px;
+            color: #ffeb3b;
+            margin-bottom: 20px;
+        }
+        .game-over-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            width: 300px;
+        }
+        .game-over-message {
+            font-size: 26px;
+            font-weight: bold;
+            color: #d32f2f;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        .game-over-message-red {
+            color: red;
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 20px;
+        }
+        .game-over-message-green {
+            color: green;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .home-button, .next-level-button {
+            padding: 20px 40px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .home-button:hover, .next-level-button:hover {
+            background-color: #45a049;
+            box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.3);
+            transform: scale(1.1);
+        }
+        .home-button:active, .next-level-button:active {
+            background-color: #388E3C;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+        }
+        .score {
+            color: green;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .game-over-message-red {
+            color: red;
+            font-size: 24px;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="menu-background"></div>
+
+<div id="menu">
+    <h1>اختر المرحلة</h1>
+    <div class="button-container">
+        <script>
+            const buttonContainer = document.querySelector('.button-container');
+            const numButtons = 20; // عدد الأزرار
+            const radius = 120; // نصف قطر الدائرة
+
+            // حساب الزوايا لتوزيع الأزرار في دائرة
+            for (let i = 0; i < numButtons; i++) {
+                const angle = (i / numButtons) * (2 * Math.PI); // حساب الزاوية
+                const x = radius * Math.cos(angle) + (buttonContainer.offsetWidth / 2 - 25); // إحداثيات X
+                const y = radius * Math.sin(angle) + (buttonContainer.offsetHeight / 2 - 25); // إحداثيات Y
+
+                // إنشاء الأزرار وتحديد موقعها في الدائرة
+                const button = document.createElement('button');
+                button.classList.add('button');
+                button.style.left = `${x}px`;
+                button.style.top = `${y}px`;
+                button.innerText = `المرحلة ${i + 1}`;
+                button.onclick = function() { startGame(i + 1); };
+                buttonContainer.appendChild(button);
+            }
+        </script>
+    </div>
+</div>
+
+<canvas id="gameCanvas" style="display: none;"></canvas>
+
+<button class="control-button left-button" onmousedown="movePlayer('left', true)" onmouseup="movePlayer('left', false)" ontouchstart="movePlayer('left', true)" ontouchend="movePlayer('left', false)">يسار</button>
+<button class="control-button right-button" onmousedown="movePlayer('right', true)" onmouseup="movePlayer('right', false)" ontouchstart="movePlayer('right', true)" ontouchend="movePlayer('right', false)">يمين</button>
+
+<audio id="gameMusic" loop>
+    <source src="game-music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    let canvas, ctx, playerX, playerY, playerWidth, playerHeight, balls, ballRadius, playerSpeed, ballSpeed, level, gameInterval, score, playerColorIndex, ballsDodged;
+    let isMovingLeft = false;
+    let isMovingRight = false;
+
+    const gameMusic = document.getElementById('gameMusic');
+
+    function startGame(selectedLevel) {
+        level = selectedLevel;
+        canvas = document.getElementById("gameCanvas");
+        canvas.width = window.innerWidth * 0.9;
+        canvas.height = window.innerHeight * 0.7;
+        canvas.style.display = "block";
+        ctx = canvas.getContext('2d');
+        document.getElementById("menu").style.display = "none";
+
+        playerX = canvas.width / 2 - 25;
+        playerY = canvas.height - 60;
+        playerWidth = canvas.width * 0.07;
+        playerHeight = canvas.height * 0.1;
+        playerSpeed = Math.max(5, canvas.width * 0.01);
+        ballSpeed = 2 + level;
+        balls = [];
+        ballRadius = canvas.width * 0.03;
+        score = 0;
+        playerColorIndex = 0;
+        ballsDodged = 0;
+
+        gameMusic.play();
+        gameInterval = setInterval(gameLoop, 1000 / 60);
+        setInterval(createBall, 1000);
+        setInterval(changePlayerColor, 200);
+
+        setTimeout(gameOver, 60000); // تحديد مدة المرحلة دقيقة واحدة
+    }
+
+    function createBall() {
+        const ballX = Math.random() * (canvas.width - ballRadius * 2) + ballRadius;
+        const colors = ["red", "blue", "green", "yellow", "purple", "orange"];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+
+        if (balls.length < 50) {
+            balls.push({ x: ballX, y: -ballRadius, color: color });
+        }
+    }
+
+    function drawPlayer() {
+        const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A6", "#A633FF", "#33FFF5"];
+        ctx.fillStyle = colors[playerColorIndex];
+        ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
+    }
+
+    function drawBalls() {
+        balls.forEach(ball => {
+            ctx.fillStyle = ball.color;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ballRadius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    function updateBalls() {
+        for (let i = 0; i < balls.length; i++) {
+            balls[i].y += ballSpeed;
+            if (balls[i].y > canvas.height) {
+                balls.splice(i, 1);
+                ballsDodged++;
+            }
+
+            const dist = Math.sqrt(
+                Math.pow(balls[i].x - (playerX + playerWidth / 2), 2) +
+                Math.pow(balls[i].y - (playerY + playerHeight / 2), 2)
+            );
+            if (dist < ballRadius + playerWidth / 2) {
+                gameOver();
+            }
+        }
+    }
+
+    function movePlayer(direction, isPressed) {
+        if (direction === 'left') isMovingLeft = isPressed;
+        if (direction === 'right') isMovingRight = isPressed;
+    }
+
+    function updatePlayerPosition() {
+        if (isMovingLeft && playerX > 0) playerX -= playerSpeed;
+        if (isMovingRight && playerX < canvas.width - playerWidth) playerX += playerSpeed;
+    }
+
+    function changePlayerColor() {
+        playerColorIndex = (playerColorIndex + 1) % 6;
+    }
+
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPlayer();
+        drawBalls();
+        updateBalls();
+        updatePlayerPosition();
+    }
+
+    function gameOver() {
+        clearInterval(gameInterval);
+        gameMusic.pause();
+
+        const gameOverContainer = document.createElement('div');
+        gameOverContainer.className = "game-over-container";
+
+        const gameOverMessage = document.createElement('div');
+        gameOverMessage.className = "game-over-message-red";
+        gameOverMessage.innerHTML = `الكرات التي تخطيتها: <span class="score">${ballsDodged}</span>`;
+
+        const starsElement = document.createElement('div');
+        starsElement.className = "stars";
+        starsElement.innerHTML = `${'★'.repeat(Math.min(3, Math.floor(ballsDodged / 10)))}${'☆'.repeat(3 - Math.min(3, Math.floor(ballsDodged / 10)))}`;
+
+        const homeButton = document.createElement('button');
+        homeButton.className = "home-button";
+        homeButton.innerText = "رجوع إلى القائمة الرئيسية";
+        homeButton.onclick = () => location.reload();
+
+        const nextLevelButton = document.createElement('button');
+        nextLevelButton.className = "next-level-button";
+        nextLevelButton.innerText = "الانتقال إلى المرحلة التالية";
+        nextLevelButton.onclick = () => {
+            // إخفاء الرسالة والنجوم والأزرار بعد الضغط
+            gameOverContainer.style.display = "none";
+            // الانتقال إلى المرحلة التالية
+            startGame(level + 1);
+        };
+
+        gameOverContainer.appendChild(gameOverMessage);
+        gameOverContainer.appendChild(starsElement);
+        gameOverContainer.appendChild(homeButton);
+        gameOverContainer.appendChild(nextLevelButton);
+
+        document.body.appendChild(gameOverContainer);
+    }
+</script>
+
+</body>
+</html>
